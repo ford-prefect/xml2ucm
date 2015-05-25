@@ -92,6 +92,10 @@ writeSection i section name objToStr obj =
     writeSectionName Nothing = ""
     writeSectionName (Just s) = "." ++ quote s
 
+maybeWriteSection :: Int -> String -> Maybe String -> (Int -> [a] -> String) -> [a] -> String
+maybeWriteSection _ _ _ _ [] = ""
+maybeWriteSection i section name objToStr obj = writeSection i section name objToStr obj
+
 writeList :: Int -> String -> (Int -> a -> String) -> a -> String
 writeList i name objToStr obj =
   writeLine i (name ++ " [") ++
@@ -133,7 +137,7 @@ writeDevice i dev@Device{..} =
     writeDevice' i' _ =
       writeList i' "ConflictingDevice" writeStrings devConflicts ++
       writeSequences i' devEnableSeq devDisableSeq ++
-      writeSection i' "Value" Nothing writeValues devValues
+      maybeWriteSection i' "Value" Nothing writeValues devValues
 
 writeModifier :: Int -> Modifier -> String
 writeModifier i m@Modifier{..} =
@@ -142,12 +146,12 @@ writeModifier i m@Modifier{..} =
     writeModifier' i' _ =
       writeList i' "SupportedDevice" writeStrings modSupports ++
       writeSequences i' modEnableSeq modDisableSeq ++
-      writeSection i' "Value" Nothing writeValues modValues
+      maybeWriteSection i' "Value" Nothing writeValues modValues
 
 writeVerb :: Int -> Verb -> String
 writeVerb i Verb{..} =
   writeSequences i verbEnableSeq verbDisableSeq ++
-  writeSection i "Value" Nothing writeValues verbValues
+  maybeWriteSection i "Value" Nothing writeValues verbValues
 
 writeVerbFile :: Verb -> (String, String)
 writeVerbFile verb@Verb{..} =

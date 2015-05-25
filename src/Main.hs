@@ -66,7 +66,6 @@ generateDevice xml TinyXMLConfig.Config{..} TinyXMLConfig.Device{..} =
                                     ("CaptureChannels", devCaptureChannels),
                                     ("PlaybackVolume", devPlaybackVolume),
                                     ("CaptureVolume", devCaptureVolume)]
-
     getValueIfNonEmpty (_, "") = []
     getValueIfNonEmpty (n, v) = [(n, v)]
 
