@@ -102,15 +102,15 @@ getConfigModifier = atTag "modifier" >>>
 
 getConfigUseCase :: ArrowXml a => a (Data.Tree.NTree.TypeDefs.NTree XNode) UseCase
 getConfigUseCase = atTag "use-case" >>>
-  proc v -> do
-    vName <- getAttrValue "name" -< v
-    vPlayDev <- getAttrValue "playback-device" -< v
-    vRecDev <- getAttrValue "capture-device" -< v
-    vPaths <- listA (getConfigName "path") -< v
-    vDevices <- listA getConfigDevice -< v
-    vMods <- listA getConfigModifier -< v
-    vValues <- listA getConfigValue -< v
-    returnA -< UseCase vName vPlayDev vRecDev vPaths vDevices vMods vValues
+  proc u -> do
+    uName <- getAttrValue "name" -< u
+    uPlayDev <- getAttrValue "playback-device" -< u
+    uRecDev <- getAttrValue "capture-device" -< u
+    uPaths <- listA (getConfigName "path") -< u
+    uDevices <- listA getConfigDevice -< u
+    uMods <- listA getConfigModifier -< u
+    uValues <- listA getConfigValue -< u
+    returnA -< UseCase uName uPlayDev uRecDev uPaths uDevices uMods uValues
 
 getConfig :: ArrowXml a => a (Data.Tree.NTree.TypeDefs.NTree XNode) Config
 getConfig = atTag "config" >>>
