@@ -31,6 +31,10 @@ import Text.XML.HXT.Core
 
 -- Device name conflictingDeviceNames tinyXMLPathNames values
 data Device = Device { devName :: String,
+                       devPlaybackChannels :: String,
+                       devCaptureChannels :: String,
+                       devPlaybackVolume :: String,
+                       devCaptureVolume :: String,
                        devConflicts ::  [String],
                        devPaths :: [String],
                        devValues :: [(String, String)] } deriving (Eq, Ord, Show)
@@ -76,10 +80,14 @@ getConfigDevice :: ArrowXml a => a (Data.Tree.NTree.TypeDefs.NTree XNode) Device
 getConfigDevice = atTag "device" >>>
   proc d -> do
     dName <- getAttrValue "name" -< d
+    dPlayChannels <- getAttrValue "playback-channels" -< d
+    dCapChannels <- getAttrValue "capture-channels" -< d
+    dPlayVolume <- getAttrValue "playback-volume" -< d
+    dCapVolume <- getAttrValue "capture-volume" -< d
     dPathNames <- listA (getConfigName "path") -< d
     dConflicts <- listA (getConfigName "conflict") -< d
     dValues <- listA getConfigValue -< d
-    returnA -< Device dName dConflicts dPathNames dValues
+    returnA -< Device dName dPlayChannels dCapChannels dPlayVolume dCapVolume dConflicts dPathNames dValues
 
 getConfigModifier :: ArrowXml a => a (Data.Tree.NTree.TypeDefs.NTree XNode) Modifier
 getConfigModifier = atTag "modifier" >>>

@@ -59,7 +59,16 @@ generateDevice xml TinyXMLConfig.Config{..} TinyXMLConfig.Device{..} =
   UCM.Device devName
             (generateEnableSequence xml confCtlDev devPaths)
             (generateDisableSequence xml confCtlDev devPaths)
-            devConflicts devValues
+            devConflicts (devValues ++ getDevValues)
+  where
+    getDevValues =
+      concatMap getValueIfNonEmpty [("PlaybackChannels", devPlaybackChannels),
+                                    ("CaptureChannels", devCaptureChannels),
+                                    ("PlaybackVolume", devPlaybackVolume),
+                                    ("CaptureVolume", devCaptureVolume)]
+
+    getValueIfNonEmpty (_, "") = []
+    getValueIfNonEmpty (n, v) = [(n, v)]
 
 generateModifier :: TinyXML.Mixer -> TinyXMLConfig.Config -> TinyXMLConfig.Modifier -> UCM.Modifier
 generateModifier xml TinyXMLConfig.Config{..} TinyXMLConfig.Modifier{..} =
