@@ -62,7 +62,7 @@ data Config = Config { confCardName :: String,
                        confUseCases :: [UseCase] } deriving (Eq, Ord, Show)
 
 atTag :: ArrowXml a => String -> a (Data.Tree.NTree.TypeDefs.NTree XNode) XmlTree
-atTag tag = deep (isElem >>> hasName tag)
+atTag tag = getChildren >>> isElem >>> hasName tag
 
 -- Parse the translation config XML
 getConfigValue :: ArrowXml a => a (Data.Tree.NTree.TypeDefs.NTree XNode) (String, String)

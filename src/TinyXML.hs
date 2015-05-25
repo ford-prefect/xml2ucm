@@ -44,7 +44,7 @@ data Mixer = Mixer { mixerDefaults :: [(String, Control)],
 -- Parse the mixer_paths XML
 
 atTag :: ArrowXml a => String -> a (Data.Tree.NTree.TypeDefs.NTree XNode) XmlTree
-atTag tag = deep (isElem >>> hasName tag)
+atTag tag = getChildren >>> isElem >>> hasName tag
 
 getControl :: ArrowXml a => a (Data.Tree.NTree.TypeDefs.NTree XNode) Control
 getControl = atTag "ctl" >>>
@@ -63,7 +63,7 @@ getPath :: ArrowXml a => a (Data.Tree.NTree.TypeDefs.NTree XNode) Path
 getPath = atTag "path" >>>
   proc p -> do
     pName <- getAttrValue "name" -< p
-    pPathNames <- listA (getChildren >>> getPathRef) -< p
+    pPathNames <- listA getPathRef -< p
     pControls <- listA getControl -< p
     returnA -< Path pName pPathNames pControls
 
