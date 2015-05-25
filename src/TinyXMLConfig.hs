@@ -21,7 +21,7 @@ module TinyXMLConfig
 , Modifier (..)
 , UseCase (..)
 , Config (..)
-, parseTinyXMLConfig
+, parse
 ) where
 
 import Control.Applicative ((<$>))
@@ -112,7 +112,5 @@ getConfig = atTag "config" >>>
     cUseCases <- listA getConfigUseCase -< c
     returnA -< Config cCard cCtl cUseCases
 
-parseTinyXMLConfig :: String -> IO Config
-parseTinyXMLConfig xmlString = head <$> runX (readString [withValidate no, withRemoveWS yes] xmlString >>> getConfig)
-
-
+parse :: String -> IO Config
+parse xmlString = head <$> runX (readString [withValidate no, withRemoveWS yes] xmlString >>> getConfig)

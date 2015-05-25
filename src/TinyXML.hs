@@ -20,7 +20,7 @@ module TinyXML
 ( Control (..)
 , Path (..)
 , Mixer (..)
-, parseTinyXML
+, parse
 ) where
 
 import Control.Applicative ((<$>))
@@ -75,5 +75,5 @@ getMixer = atTag "mixer" >>>
     returnA -< Mixer (map (\c -> (controlName c, c)) mControls)
                      (map (\p -> (pathName p, p)) mPaths)
 
-parseTinyXML :: String -> IO Mixer
-parseTinyXML xmlString = head <$> runX (readString [withValidate no, withRemoveWS yes] xmlString >>> getMixer)
+parse :: String -> IO Mixer
+parse xmlString = head <$> runX (readString [withValidate no, withRemoveWS yes] xmlString >>> getMixer)

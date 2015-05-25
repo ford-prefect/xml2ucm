@@ -104,7 +104,7 @@ main = do
   -- FIXME: Error handling
   xmlString <- readFile (head args)
   configString <- readFile (head $ tail args)
-  xml <- parseTinyXML xmlString
-  config <- parseTinyXMLConfig configString
+  xml <- TinyXML.parse xmlString
+  config <- TinyXMLConfig.parse configString
   mapM_ (uncurry dumpFile) (UCM.generateFiles $ xml2ucm xml config)
   exitSuccess
