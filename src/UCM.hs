@@ -37,6 +37,10 @@ data Sequence = Sequence { seqCtl :: String,
 
 -- ice name enable disable conflicts values
 data Device = Device { devName :: String,
+                       devPlaybackChannels :: String,
+                       devCaptureChannels :: String,
+                       devPlaybackVolume :: String,
+                       devCaptureVolume :: String,
                        devEnableSeq :: Sequence,
                        devDisableSeq :: Sequence,
                        devConflicts :: [String],
@@ -130,6 +134,12 @@ writeSequences i en dis =
   writeList i "EnableSequence" writeSequence en ++
   writeList i "DisableSequence" writeSequence dis
 
+filterEmpty :: [(String, String)] -> [(String, String)]
+filterEmpty l = filter isEmpty l
+  where
+    isEmpty (_, "") = False
+    isEmpty (_, v)  = True
+
 writeDevice :: Int -> Device -> String
 writeDevice i dev@Device{..} =
   writeSection i "SectionDevice" (Just devName) writeDevice' dev
@@ -137,7 +147,12 @@ writeDevice i dev@Device{..} =
     writeDevice' i' _ =
       writeList i' "ConflictingDevice" writeStrings devConflicts ++
       writeSequences i' devEnableSeq devDisableSeq ++
-      maybeWriteSection i' "Value" Nothing writeValues devValues
+      maybeWriteSection i' "Value" Nothing writeValues (devValues ++ genDevValues)
+    genDevValues =
+      filterEmpty [("PlaybackChannels", devPlaybackChannels),
+                   ("CaptureChannels", devCaptureChannels),
+                   ("PlaybackVolume", devPlaybackVolume),
+                   ("CaptureVolume", devCaptureVolume)]
 
 writeModifier :: Int -> Modifier -> String
 writeModifier i m@Modifier{..} =

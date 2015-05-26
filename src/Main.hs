@@ -64,17 +64,13 @@ generateDisableSequence xml = generateSequence (generateDefaultCommand xml) xml
 generateDevice :: TinyXML.Mixer -> TinyXMLConfig.Config -> TinyXMLConfig.Device -> UCM.Device
 generateDevice xml TinyXMLConfig.Config{..} TinyXMLConfig.Device{..} =
   UCM.Device devName
-            (generateEnableSequence xml confCtlDev devPaths)
-            (generateDisableSequence xml confCtlDev devPaths)
-            devConflicts (devValues ++ getDevValues)
-  where
-    getDevValues =
-      concatMap getValueIfNonEmpty [("PlaybackChannels", devPlaybackChannels),
-                                    ("CaptureChannels", devCaptureChannels),
-                                    ("PlaybackVolume", devPlaybackVolume),
-                                    ("CaptureVolume", devCaptureVolume)]
-    getValueIfNonEmpty (_, "") = []
-    getValueIfNonEmpty (n, v) = [(n, v)]
+             devPlaybackChannels
+             devCaptureChannels
+             devPlaybackVolume
+             devCaptureVolume
+             (generateEnableSequence xml confCtlDev devPaths)
+             (generateDisableSequence xml confCtlDev devPaths)
+             devConflicts devValues
 
 generateModifier :: TinyXML.Mixer -> TinyXMLConfig.Config -> TinyXMLConfig.Modifier -> UCM.Modifier
 generateModifier xml TinyXMLConfig.Config{..} TinyXMLConfig.Modifier{..} =
