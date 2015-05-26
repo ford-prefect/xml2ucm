@@ -173,7 +173,10 @@ writeModifier i m@Modifier{..} =
     writeModifier' i' _ =
       writeList i' "SupportedDevice" writeStrings modSupports ++
       writeSequences i' modEnableSeq modDisableSeq ++
-      maybeWriteSection i' "Value" Nothing writeValues modValues
+      maybeWriteSection i' "Value" Nothing writeValues (modValues ++ genModValues)
+    genModValues =
+      filterEmpty [("PlaybackPCM", modPlayDevice),
+                   ("CapturePCM", modCaptureDevice)]
 
 writeVerb :: Int -> Verb -> String
 writeVerb i Verb{..} =
