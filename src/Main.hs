@@ -32,10 +32,10 @@ import UCM
 generateCommand :: TinyXML.Control -> UCM.Command
 generateCommand TinyXML.Control{..} = UCM.CSet controlName controlValue
 
-lookupListOrDie :: String -> String -> [(String, a)] -> Maybe a
-lookupListOrDie t name list
-  | isNothing item = error ("Could not find " ++ t ++ ": '" ++ name ++ "'") Nothing
-  | otherwise      = item
+lookupListOrDie :: String -> String -> [(String, a)] -> a
+lookupListOrDie typ name list
+  | isNothing item = error ("Could not find " ++ typ ++ ": '" ++ name ++ "'")
+  | otherwise      = fromJust item
   where
     item = lookup name list
 
@@ -43,11 +43,11 @@ generateDefaultCommand :: TinyXML.Mixer -> TinyXML.Control -> UCM.Command
 generateDefaultCommand TinyXML.Mixer{..} TinyXML.Control{controlName = name} =
   UCM.CSet name defaultValue
   where
-    defaultValue = controlValue $ fromJust $ lookupListOrDie "control" name mixerDefaults
+    defaultValue = controlValue $ lookupListOrDie "control" name mixerDefaults
 
 getPathControls :: TinyXML.Mixer -> String -> [TinyXML.Control]
 getPathControls xml@TinyXML.Mixer{..} pName = let
-    TinyXML.Path{..} = fromJust $ lookupListOrDie "path" pName mixerPaths
+    TinyXML.Path{..} = lookupListOrDie "path" pName mixerPaths
   in
     concatMap (getPathControls xml) pathPaths ++ pathControls
 
