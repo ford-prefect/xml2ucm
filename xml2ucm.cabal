@@ -19,7 +19,7 @@ executable xml2ucm
                        TinyXMLConfig,
                        UCM
   -- other-extensions:    
-  build-depends:       base >=4.6 && <4.7,
+  build-depends:       base >=4.6 && <=4.8,
                        containers,
                        hxt
   hs-source-dirs:      src
