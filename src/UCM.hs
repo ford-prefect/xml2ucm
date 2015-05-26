@@ -135,10 +135,10 @@ writeSequences i en dis =
   writeList i "DisableSequence" writeSequence dis
 
 filterEmpty :: [(String, String)] -> [(String, String)]
-filterEmpty l = filter isEmpty l
+filterEmpty = filter isEmpty
   where
     isEmpty (_, "") = False
-    isEmpty (_, v)  = True
+    isEmpty _       = True
 
 writeDevice :: Int -> Device -> String
 writeDevice i dev@Device{..} =
