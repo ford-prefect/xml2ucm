@@ -26,6 +26,9 @@ module UCM
 , generateFiles
 ) where
 
+import Data.List (find)
+import Data.Maybe (maybeToList)
+
 -- CSet name value | Exec command
 data Command = CSet { csetName :: String,
                       csetValue :: String } |
@@ -140,13 +143,22 @@ filterEmpty = filter isEmpty
     isEmpty (_, "") = False
     isEmpty _       = True
 
-writeDevice :: Int -> Device -> String
-writeDevice i dev@Device{..} =
+-- Gets the disable sequence and adds a volume reset if required
+getDisableSeq :: Config -> Device -> Sequence
+getDisableSeq (Config _ _ (Sequence _ defaults)) (Device _ _ _ pVol cVol _ (Sequence ctl cmds) _ _) =
+  Sequence ctl (cmds ++ maybeDisableVolume pVol ++ maybeDisableVolume cVol)
+  where
+    maybeDisableVolume v = maybeToList $ find (findVolume v) defaults
+    findVolume v (CSet name _) = (v ++ " Volume") == name
+    findVolume _ _             = False
+
+writeDevice :: Int -> Config -> Device -> String
+writeDevice i conf dev@Device{..} =
   writeSection i "SectionDevice" (Just devName) writeDevice' dev
   where
     writeDevice' i' _ =
       writeList i' "ConflictingDevice" writeStrings devConflicts ++
-      writeSequences i' devEnableSeq devDisableSeq ++
+      writeSequences i' devEnableSeq (getDisableSeq conf dev) ++
       maybeWriteSection i' "Value" Nothing writeValues (devValues ++ genDevValues)
     genDevValues =
       filterEmpty [("PlaybackChannels", devPlaybackChannels),
@@ -172,11 +184,11 @@ writeVerb i Verb{..} =
       filterEmpty [("PlaybackPCM", verbPlayDevice),
                    ("CapturePCM", verbCaptureDevice)]
 
-writeVerbFile :: Verb -> (String, String)
-writeVerbFile verb@Verb{..} =
+writeVerbFile :: Config -> Verb -> (String, String)
+writeVerbFile conf verb@Verb{..} =
   (verbName,
    writeSection 0 "SectionVerb" Nothing writeVerb verb ++
-   concatMap (writeDevice 0) verbDevices ++
+   concatMap (writeDevice 0 conf) verbDevices ++
    concatMap (writeModifier 0) verbModifiers)
 
 writeConfigVerb :: Int -> Verb -> String
@@ -195,4 +207,4 @@ writeConfigFile Config{..} =
 
 generateFiles :: Config -> [(String, String)]
 generateFiles conf@Config{..} =
-  writeConfigFile conf : map writeVerbFile confVerbs
+  writeConfigFile conf : map (writeVerbFile conf) confVerbs
