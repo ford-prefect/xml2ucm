@@ -121,7 +121,7 @@ writeCommand i control =
 
 writeSequence :: Int -> Sequence -> String
 writeSequence i Sequence{..} =
-  writeLine i ("cdev " ++ quote seqCtl) ++
+  writeLine i ("cdev " ++ quote seqCtl) ++ "\n" ++
   concatMap (writeCommand i) seqCommands
 
 writeValue :: Int -> (String, String) -> String
