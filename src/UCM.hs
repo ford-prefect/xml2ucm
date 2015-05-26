@@ -166,7 +166,11 @@ writeModifier i m@Modifier{..} =
 writeVerb :: Int -> Verb -> String
 writeVerb i Verb{..} =
   writeSequences i verbEnableSeq verbDisableSeq ++
-  maybeWriteSection i "Value" Nothing writeValues verbValues
+  maybeWriteSection i "Value" Nothing writeValues (verbValues ++ genVerbValues)
+  where
+    genVerbValues =
+      filterEmpty [("PlaybackPCM", verbPlayDevice),
+                   ("CapturePCM", verbCaptureDevice)]
 
 writeVerbFile :: Verb -> (String, String)
 writeVerbFile verb@Verb{..} =
