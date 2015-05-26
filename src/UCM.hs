@@ -84,7 +84,7 @@ writeLine indent line = replicate indent ' ' ++ line ++ "\n"
 
 writeStrings :: Int -> [String] -> String
 writeStrings i =
-  concatMap (writeLine i)
+  concatMap (writeLine i . quote)
 
 writeSection :: Int -> String -> Maybe String -> (Int -> a -> String) -> a -> String
 writeSection i section name objToStr obj =
@@ -112,7 +112,7 @@ writeCommand i control =
   writeLine i (ucmCommandToStr control)
   where
     ucmCommandToStr (CSet name value) =
-      "cset name='" ++ name ++ "' " ++ value
+      "cset " ++ quote ("name='" ++ name ++ "' " ++ value)
     ucmCommandToStr (Exec cmd) =
       "exec " ++ quote cmd
 
