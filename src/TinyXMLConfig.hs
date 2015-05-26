@@ -31,6 +31,7 @@ import Text.XML.HXT.Core
 
 -- Device name conflictingDeviceNames tinyXMLPathNames values
 data Device = Device { devName :: String,
+                       devDesc :: String,
                        devPlaybackChannels :: String,
                        devCaptureChannels :: String,
                        devPlaybackVolume :: String,
@@ -41,6 +42,7 @@ data Device = Device { devName :: String,
 
 -- Modifier name playDevice captureDevice supportedDeviceNames tinyXMLPathNames values
 data Modifier = Modifier { modName :: String,
+                           modDesc :: String,
                            modPlayDev :: String,
                            modCaptureDev :: String,
                            modSupports :: [String],
@@ -49,6 +51,7 @@ data Modifier = Modifier { modName :: String,
 
 -- UseCase name ctlDevice playDevice captureDevice paths devices use-cases values
 data UseCase = UseCase { ucName :: String,
+                         ucDesc :: String,
                          ucPlayDev :: String,
                          ucCaptureDev :: String,
                          ucPaths :: [String],
@@ -80,6 +83,7 @@ getConfigDevice :: ArrowXml a => a (Data.Tree.NTree.TypeDefs.NTree XNode) Device
 getConfigDevice = atTag "device" >>>
   proc d -> do
     dName <- getAttrValue "name" -< d
+    dDesc <- getAttrValue "description" -< d
     dPlayChannels <- getAttrValue "playback-channels" -< d
     dCapChannels <- getAttrValue "capture-channels" -< d
     dPlayVolume <- getAttrValue "playback-volume" -< d
@@ -87,30 +91,32 @@ getConfigDevice = atTag "device" >>>
     dPathNames <- listA (getConfigName "path") -< d
     dConflicts <- listA (getConfigName "conflict") -< d
     dValues <- listA getConfigValue -< d
-    returnA -< Device dName dPlayChannels dCapChannels dPlayVolume dCapVolume dConflicts dPathNames dValues
+    returnA -< Device dName dDesc dPlayChannels dCapChannels dPlayVolume dCapVolume dConflicts dPathNames dValues
 
 getConfigModifier :: ArrowXml a => a (Data.Tree.NTree.TypeDefs.NTree XNode) Modifier
 getConfigModifier = atTag "modifier" >>>
   proc m -> do
     mName <- getAttrValue "name" -< m
+    mDesc <- getAttrValue "description" -< m
     mPlay <- getAttrValue "playback-device" -< m
     mCapture <- getAttrValue "capture-device" -< m
     mPathNames <- listA (getConfigName "path") -< m
     mSupports <- listA (getConfigName "supports") -< m
     mValues <- listA getConfigValue -< m
-    returnA -< Modifier mName mPlay mCapture mSupports mPathNames mValues
+    returnA -< Modifier mName mDesc mPlay mCapture mSupports mPathNames mValues
 
 getConfigUseCase :: ArrowXml a => a (Data.Tree.NTree.TypeDefs.NTree XNode) UseCase
 getConfigUseCase = atTag "use-case" >>>
   proc u -> do
     uName <- getAttrValue "name" -< u
+    uDesc <- getAttrValue "description" -< u
     uPlayDev <- getAttrValue "playback-device" -< u
     uRecDev <- getAttrValue "capture-device" -< u
     uPaths <- listA (getConfigName "path") -< u
     uDevices <- listA getConfigDevice -< u
     uMods <- listA getConfigModifier -< u
     uValues <- listA getConfigValue -< u
-    returnA -< UseCase uName uPlayDev uRecDev uPaths uDevices uMods uValues
+    returnA -< UseCase uName uDesc uPlayDev uRecDev uPaths uDevices uMods uValues
 
 getConfig :: ArrowXml a => a (Data.Tree.NTree.TypeDefs.NTree XNode) Config
 getConfig = atTag "config" >>>

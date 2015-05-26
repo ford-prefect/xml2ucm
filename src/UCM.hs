@@ -40,6 +40,7 @@ data Sequence = Sequence { seqCtl :: String,
 
 -- ice name enable disable conflicts values
 data Device = Device { devName :: String,
+                       devDesc :: String,
                        devPlaybackChannels :: String,
                        devCaptureChannels :: String,
                        devPlaybackVolume :: String,
@@ -51,6 +52,7 @@ data Device = Device { devName :: String,
 
 -- Modifier name playDev captureDev enable disable supports values
 data Modifier = Modifier { modName :: String,
+                           modDesc :: String,
                            modPlayDevice :: String,
                            modCaptureDevice :: String,
                            modEnableSeq :: Sequence,
@@ -60,6 +62,7 @@ data Modifier = Modifier { modName :: String,
 
 -- Verb name playDev captureDev enable disable devices modifiers values
 data Verb = Verb { verbName :: String,
+                   verbDesc :: String,
                    verbPlayDevice :: String,
                    verbCaptureDevice :: String,
                    verbEnableSeq :: Sequence,
@@ -132,6 +135,11 @@ writeValues :: Int -> [(String, String)] -> String
 writeValues i =
   concatMap (writeValue i)
 
+writeComment :: Int -> String -> String
+writeComment _ "" = ""
+writeComment i c =
+  writeLine i ("Comment " ++ quote c ++ "\n")
+
 writeSequences :: Int -> Sequence -> Sequence -> String
 writeSequences i en dis =
   writeList i "EnableSequence" writeSequence en ++
@@ -145,7 +153,7 @@ filterEmpty = filter isEmpty
 
 -- Gets the disable sequence and adds a volume reset if required
 getDisableSeq :: Config -> Device -> Sequence
-getDisableSeq (Config _ _ (Sequence _ defaults)) (Device _ _ _ pVol cVol _ (Sequence ctl cmds) _ _) =
+getDisableSeq (Config _ _ (Sequence _ defaults)) (Device _ _ _ _ pVol cVol _ (Sequence ctl cmds) _ _) =
   Sequence ctl (cmds ++ maybeDisableVolume pVol ++ maybeDisableVolume cVol)
   where
     maybeDisableVolume v = maybeToList $ find (findVolume v) defaults
@@ -157,6 +165,7 @@ writeDevice i conf dev@Device{..} =
   writeSection i "SectionDevice" (Just devName) writeDevice' dev
   where
     writeDevice' i' _ =
+      writeComment i' devDesc ++
       writeList i' "ConflictingDevice" writeStrings devConflicts ++
       writeSequences i' devEnableSeq (getDisableSeq conf dev) ++
       maybeWriteSection i' "Value" Nothing writeValues (devValues ++ genDevValues)
@@ -171,6 +180,7 @@ writeModifier i m@Modifier{..} =
   writeSection i "SectionModifier" (Just modName) writeModifier' m
   where
     writeModifier' i' _ =
+      writeComment i' modDesc ++
       writeList i' "SupportedDevice" writeStrings modSupports ++
       writeSequences i' modEnableSeq modDisableSeq ++
       maybeWriteSection i' "Value" Nothing writeValues (modValues ++ genModValues)
@@ -196,7 +206,8 @@ writeVerbFile conf verb@Verb{..} =
 
 writeConfigVerb :: Int -> Verb -> String
 writeConfigVerb i Verb{..} =
-  writeLine i ("File " ++ quote verbName)
+  writeLine i ("File " ++ quote verbName) ++
+  writeComment i verbDesc
 
 writeConfigUseCase :: Int -> Verb -> String
 writeConfigUseCase i verb@Verb{..} =

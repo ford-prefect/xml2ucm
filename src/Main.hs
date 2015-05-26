@@ -64,6 +64,7 @@ generateDisableSequence xml = generateSequence (generateDefaultCommand xml) xml
 generateDevice :: TinyXML.Mixer -> TinyXMLConfig.Config -> TinyXMLConfig.Device -> UCM.Device
 generateDevice xml TinyXMLConfig.Config{..} TinyXMLConfig.Device{..} =
   UCM.Device devName
+             devDesc
              devPlaybackChannels
              devCaptureChannels
              devPlaybackVolume
@@ -75,6 +76,7 @@ generateDevice xml TinyXMLConfig.Config{..} TinyXMLConfig.Device{..} =
 generateModifier :: TinyXML.Mixer -> TinyXMLConfig.Config -> TinyXMLConfig.Modifier -> UCM.Modifier
 generateModifier xml TinyXMLConfig.Config{..} TinyXMLConfig.Modifier{..} =
   UCM.Modifier modName
+               modDesc
                modPlayDev
                modCaptureDev
                (generateEnableSequence xml confCtlDev modPaths)
@@ -84,6 +86,7 @@ generateModifier xml TinyXMLConfig.Config{..} TinyXMLConfig.Modifier{..} =
 generateVerb :: TinyXML.Mixer -> TinyXMLConfig.Config -> TinyXMLConfig.UseCase -> UCM.Verb
 generateVerb xml conf@TinyXMLConfig.Config{..} TinyXMLConfig.UseCase{..} =
   UCM.Verb ucName
+           ucDesc
            ucPlayDev
            ucCaptureDev
            (generateEnableSequence xml confCtlDev ucPaths)
