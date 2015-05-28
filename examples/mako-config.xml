@@ -1,0 +1,69 @@
+<config card-name="apq8064-tabla-snd-card" ctl-device="hw:apq8064tablasnd">
+  <use-case name="HiFi"
+            description="Play HiFi quality Music"
+            ctl-device="hw:apq8064tablasnd"
+            playback-device="hw:apq8064tablasnd,0"
+            capture-device="hw:apq8064tablasnd,0">
+
+    <path name="deep-buffer-playback" />
+    <path name="audio-record" />
+
+    <value name="TQ" value="HiFi" />
+    <value name="PulseAudioSinkModargs" value="ignore_dB=yes" />
+
+    <!-- Playback devices -->
+
+    <device name="Earpiece"
+            description="Handset Rx device"
+            playback-channels="2">
+      <path name="handset" />
+      <conflict name="Headphones" />
+    </device>
+
+    <device name="Speaker"
+            description="Speaker Rx device"
+            playback-channels="2"
+            playback-volume="RX3 Digital">
+      <path name="speaker" />
+      <conflict name="Earpiece" />
+    </device>
+
+    <device name="Headphones"
+            description="Headset Rx device"
+            playback-channels="2">
+      <path name="headphones" />
+      <conflict name="Earpiece" />
+    </device>
+
+    <!-- Capture devices -->
+
+    <device name="HeadsetMic"
+            description="Headset Tx device"
+            capture-channels="1">
+      <path name="headset-mic" />
+      <conflict name="HandsetMic" />
+    </device>
+
+    <device name="HandsetMic"
+            description="Handset Tx device"
+            capture-channels="1">
+      <path name="handset-mic" />
+      <conflict name="HeadsetMic" />
+    </device>
+
+    <!-- Modifiers -->
+
+    <modifier name="PlayVoice"
+              description="Low latency path for voice"
+              playback-device="hw:apq8064tablasnd,14"
+              capture-device="hw:apq8064tablasnd,14">
+
+      <path name="low-latency-playback" />
+      <supports name="Earpiece" />
+      <supports name="Headphones" />
+      <supports name="Speaker" />
+      <value name="PulseAudioSinkModargs" value="ignore_dB=yes tsched_buffer_size=1920" />
+    </modifier>
+
+  </use-case>
+</config>
