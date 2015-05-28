@@ -18,8 +18,7 @@ limitations under the License.
 
 module Main where
 
-import System.Environment (getArgs)
-import System.Exit
+import Options.Applicative
 
 import Data.Maybe
 
@@ -112,13 +111,40 @@ dumpFile file contents = do
   putStrLn (file ++ ":")
   putStrLn contents
 
-main :: IO ()
-main = do
-  args <- getArgs
-  -- FIXME: Error handling
-  xmlString <- readFile (head args)
-  configString <- readFile (head $ tail args)
-  xml <- TinyXML.parse xmlString
-  config <- TinyXMLConfig.parse configString
+data Opts = Opts { optConfigFile :: String,
+                   optTinyXMLFile :: String,
+                   optOutputDir :: String }
+
+parseOptions :: Parser Opts
+parseOptions = Opts
+           <$> strOption
+               ( long "config"
+              <> short 'c'
+              <> metavar "FILE"
+              <> help "Configuration XML file" )
+           <*> strOption
+               ( long "mixer-paths"
+              <> short 'm'
+              <> metavar "FILE"
+              <> help "Mixer paths XML file" )
+           <*> strOption
+               ( long "output-dir"
+              <> short 'o'
+              <> value "."
+              <> metavar "DIR"
+              <> help "Output path for UCM configuration directory" )
+
+run :: Opts -> IO ()
+run Opts{..} = do
+  xmlFile <- readFile optTinyXMLFile
+  configFile <- readFile optConfigFile
+  xml <- TinyXML.parse xmlFile
+  config <- TinyXMLConfig.parse configFile
   mapM_ (uncurry dumpFile) (UCM.generateFiles $ xml2ucm xml config)
-  exitSuccess
+
+main :: IO ()
+main = execParser opts >>= run
+  where
+    opts = info (helper <*> parseOptions)
+      ( fullDesc
+     <> header "xml2ucm - Android mixer path XML to ALSA UCM converter" )
