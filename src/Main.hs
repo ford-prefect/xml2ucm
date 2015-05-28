@@ -19,7 +19,7 @@ limitations under the License.
 module Main where
 
 import System.FilePath (joinPath)
-import System.Directory (createDirectory)
+import System.Directory (createDirectory, doesDirectoryExist)
 import Options.Applicative
 import Data.Maybe
 
@@ -109,7 +109,8 @@ xml2ucm xml conf@TinyXMLConfig.Config{..} =
 
 data Opts = Opts { optConfigFile :: String,
                    optTinyXMLFile :: String,
-                   optOutputDir :: String }
+                   optOutputDir :: String,
+                   optForce :: Bool }
 
 parseOptions :: Parser Opts
 parseOptions = Opts
@@ -129,6 +130,10 @@ parseOptions = Opts
               <> value "."
               <> metavar "DIR"
               <> help "Output path for UCM configuration directory" )
+           <*> switch
+               ( long "force"
+              <> short 'f'
+              <> help "Overwrite existing configuration if it exists")
 
 run :: Opts -> IO ()
 run Opts{..} = do
@@ -137,7 +142,11 @@ run Opts{..} = do
   xml        <- TinyXML.parse xmlFile
   config     <- TinyXMLConfig.parse configFile
   let dir = joinPath [optOutputDir, TinyXMLConfig.confCardName config]
-  createDirectory dir
+  exists     <- doesDirectoryExist dir
+  case (optForce, exists) of
+    (False, True) -> error ("Error: Output directory '" ++ dir ++ "' already exists (use -f to overwrite)")
+    (True, True)  -> return () -- Directory exists, but we should just write the files we want out
+    (_, False)    -> createDirectory dir
   mapM_ (uncurry (dumpFile dir)) (UCM.generateFiles $ xml2ucm xml config)
   where
     dumpFile :: FilePath -> FilePath -> String -> IO ()
