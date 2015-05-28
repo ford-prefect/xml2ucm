@@ -18,8 +18,9 @@ limitations under the License.
 
 module Main where
 
+import System.FilePath (joinPath)
+import System.Directory (createDirectory)
 import Options.Applicative
-
 import Data.Maybe
 
 import TinyXML
@@ -106,11 +107,6 @@ xml2ucm xml conf@TinyXMLConfig.Config{..} =
              (map (generateVerb xml conf) confUseCases)
              (generateDefaults xml conf)
 
-dumpFile :: String -> String -> IO ()
-dumpFile file contents = do
-  putStrLn (file ++ ":")
-  putStrLn contents
-
 data Opts = Opts { optConfigFile :: String,
                    optTinyXMLFile :: String,
                    optOutputDir :: String }
@@ -136,11 +132,18 @@ parseOptions = Opts
 
 run :: Opts -> IO ()
 run Opts{..} = do
-  xmlFile <- readFile optTinyXMLFile
+  xmlFile    <- readFile optTinyXMLFile
   configFile <- readFile optConfigFile
-  xml <- TinyXML.parse xmlFile
-  config <- TinyXMLConfig.parse configFile
-  mapM_ (uncurry dumpFile) (UCM.generateFiles $ xml2ucm xml config)
+  xml        <- TinyXML.parse xmlFile
+  config     <- TinyXMLConfig.parse configFile
+  let dir = joinPath [optOutputDir, TinyXMLConfig.confCardName config]
+  createDirectory dir
+  mapM_ (uncurry (dumpFile dir)) (UCM.generateFiles $ xml2ucm xml config)
+  where
+    dumpFile :: FilePath -> FilePath -> String -> IO ()
+    dumpFile dir file =
+      writeFile (joinPath [dir, file])
+
 
 main :: IO ()
 main = execParser opts >>= run

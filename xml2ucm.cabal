@@ -21,6 +21,8 @@ executable xml2ucm
   -- other-extensions:    
   build-depends:       base >=4.6 && <=4.8,
                        containers,
+                       filepath,
+                       directory,
                        hxt,
                        optparse-applicative
   hs-source-dirs:      src
