@@ -14,6 +14,7 @@ To build the code, you'll need ```cabal-install```, which your distribution
 probably provides. Check out the code and then run:
 
 ```sh
+$ cabal sandbox init
 $ cabal install --only-dependencies xml2ucm.cabal
 $ cabal build
 ```
