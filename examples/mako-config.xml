@@ -1,7 +1,6 @@
 <config card-name="apq8064-tabla-snd-card" ctl-device="hw:apq8064tablasnd">
   <use-case name="HiFi"
             description="Play HiFi quality Music"
-            ctl-device="hw:apq8064tablasnd"
             playback-device="hw:apq8064tablasnd,0"
             capture-device="hw:apq8064tablasnd,0">
 
