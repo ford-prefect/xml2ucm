@@ -26,8 +26,12 @@ import TinyXML
 import TinyXMLConfig
 import UCM
 
+stringToMaybe :: String -> Maybe String
+stringToMaybe "" = Nothing
+stringToMaybe s  = Just s
+
 generateCommand :: TinyXML.Control -> Maybe UCM.Command
-generateCommand TinyXML.Control{..} = Just $ UCM.CSet controlName controlValue
+generateCommand TinyXML.Control{..} = Just $ UCM.CSet controlName (stringToMaybe controlIndex) controlValue
 
 lookupListOrDie :: String -> String -> [(String, a)] -> a
 lookupListOrDie typ name list
@@ -39,7 +43,7 @@ lookupListOrDie typ name list
 generateDefaultCommand :: TinyXML.Mixer -> TinyXML.Control -> Maybe UCM.Command
 generateDefaultCommand TinyXML.Mixer{..} TinyXML.Control{controlName = name}
   | isNothing control = Nothing
-  | otherwise         = Just $ UCM.CSet name (controlValue $ fromJust control)
+  | otherwise         = Just $ UCM.CSet name (stringToMaybe . controlIndex $ fromJust control) (controlValue $ fromJust control)
   where
     control = lookup name mixerDefaults
 

@@ -31,6 +31,7 @@ import Data.Maybe (maybeToList)
 
 -- CSet name value | Exec command
 data Command = CSet { csetName :: String,
+                      csetIndex :: Maybe String,
                       csetValue :: String } |
                Exec { execCommand :: String } deriving (Eq, Ord, Show)
 
@@ -117,8 +118,11 @@ writeCommand :: Int -> Command -> String
 writeCommand i control =
   writeLine i (ucmCommandToStr control)
   where
-    ucmCommandToStr (CSet name value) =
+    ucmCommandToStr (CSet name Nothing value) =
       "cset " ++ quote ("name='" ++ name ++ "' " ++ value)
+    -- FIXME: can we emit a single, collated line instead of one per index?
+    ucmCommandToStr (CSet name (Just index) value) =
+      "cset " ++ quote ("name='" ++ name ++ "' " ++ replicate ((read index) - 1) ',' ++ value)
     ucmCommandToStr (Exec cmd) =
       "exec " ++ quote cmd
 
@@ -157,7 +161,7 @@ getDisableSeq (Config _ _ (Sequence _ defaults)) (Device _ _ _ _ pVol cVol _ (Se
   Sequence ctl (cmds ++ maybeDisableVolume pVol ++ maybeDisableVolume cVol)
   where
     maybeDisableVolume v = maybeToList $ find (findVolume v) defaults
-    findVolume v (CSet name _) = (v ++ " Volume") == name
+    findVolume v (CSet name _ _) = (v ++ " Volume") == name
     findVolume _ _             = False
 
 writeDevice :: Int -> Config -> Device -> String

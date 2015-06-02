@@ -30,6 +30,7 @@ import Text.XML.HXT.Core
 
 -- Control name value
 data Control = Control { controlName :: String,
+                         controlIndex :: String,
                          controlValue :: String } deriving (Eq, Ord, Show)
 
 -- Path name pathNames controls
@@ -50,8 +51,9 @@ getControl :: ArrowXml a => a (Data.Tree.NTree.TypeDefs.NTree XNode) Control
 getControl = atTag "ctl" >>>
   proc c -> do
     cName <- getAttrValue "name" -< c
+    cIndex <- getAttrValue "id" -< c
     cValue <- getAttrValue "value" -< c
-    returnA -< Control cName cValue
+    returnA -< Control cName cIndex cValue
 
 getPathRef :: ArrowXml a => a (Data.Tree.NTree.TypeDefs.NTree XNode) String
 getPathRef = atTag "path" >>>
