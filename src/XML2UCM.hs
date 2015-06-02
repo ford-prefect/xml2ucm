@@ -26,8 +26,8 @@ import TinyXML
 import TinyXMLConfig
 import UCM
 
-generateCommand :: TinyXML.Control -> UCM.Command
-generateCommand TinyXML.Control{..} = UCM.CSet controlName controlValue
+generateCommand :: TinyXML.Control -> Maybe UCM.Command
+generateCommand TinyXML.Control{..} = Just $ UCM.CSet controlName controlValue
 
 lookupListOrDie :: String -> String -> [(String, a)] -> a
 lookupListOrDie typ name list
@@ -36,11 +36,12 @@ lookupListOrDie typ name list
   where
     item = lookup name list
 
-generateDefaultCommand :: TinyXML.Mixer -> TinyXML.Control -> UCM.Command
-generateDefaultCommand TinyXML.Mixer{..} TinyXML.Control{controlName = name} =
-  UCM.CSet name defaultValue
+generateDefaultCommand :: TinyXML.Mixer -> TinyXML.Control -> Maybe UCM.Command
+generateDefaultCommand TinyXML.Mixer{..} TinyXML.Control{controlName = name}
+  | isNothing control = Nothing
+  | otherwise         = Just $ UCM.CSet name (controlValue $ fromJust control)
   where
-    defaultValue = controlValue $ lookupListOrDie "control" name mixerDefaults
+    control = lookup name mixerDefaults
 
 getPathControls :: TinyXML.Mixer -> String -> [TinyXML.Control]
 getPathControls xml@TinyXML.Mixer{..} pName = let
@@ -48,9 +49,9 @@ getPathControls xml@TinyXML.Mixer{..} pName = let
   in
     concatMap (getPathControls xml) pathPaths ++ pathControls
 
-generateSequence :: (TinyXML.Control -> UCM.Command) -> TinyXML.Mixer ->  String -> [String] -> UCM.Sequence
+generateSequence :: (TinyXML.Control -> Maybe UCM.Command) -> TinyXML.Mixer ->  String -> [String] -> UCM.Sequence
 generateSequence genCommand xml ctl =
-  UCM.Sequence ctl . map genCommand . concatMap (getPathControls xml)
+  UCM.Sequence ctl . mapMaybe genCommand . concatMap (getPathControls xml)
 
 generateEnableSequence :: TinyXML.Mixer -> String -> [String] -> UCM.Sequence
 generateEnableSequence = generateSequence generateCommand
@@ -94,7 +95,7 @@ generateVerb xml conf@TinyXMLConfig.Config{..} TinyXMLConfig.UseCase{..} =
 
 generateDefaults :: TinyXML.Mixer -> TinyXMLConfig.Config -> UCM.Sequence
 generateDefaults TinyXML.Mixer{..} TinyXMLConfig.Config{..} =
-  UCM.Sequence confCtlDev (map generateCommand' mixerDefaults)
+  UCM.Sequence confCtlDev (mapMaybe generateCommand' mixerDefaults)
   where
     generateCommand' (_, c) = generateCommand c
 
