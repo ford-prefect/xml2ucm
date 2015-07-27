@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -}
 
-{-# LANGUAGE RecordWildCards, DisambiguateRecordFields #-}
+{-# LANGUAGE RecordWildCards #-}
 
 module XML2UCM
 ( xml2ucm
