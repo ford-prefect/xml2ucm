@@ -122,7 +122,7 @@ writeCommand i control =
       "cset " ++ quote ("name='" ++ name ++ "' " ++ value)
     -- FIXME: can we emit a single, collated line instead of one per index?
     ucmCommandToStr (CSet name (Just index) value) =
-      "cset " ++ quote ("name='" ++ name ++ "' " ++ replicate ((read index) - 1) ',' ++ value)
+      "cset " ++ quote ("name='" ++ name ++ "' " ++ replicate (read index - 1) ',' ++ value)
     ucmCommandToStr (Exec cmd) =
       "exec " ++ quote cmd
 
