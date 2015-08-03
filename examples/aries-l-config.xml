@@ -1,0 +1,110 @@
+<config card-name="msm8974-taiko-mtp-snd-card" ctl-device="hw:msm8974taikomtp">
+  <use-case name="HiFi"
+            playback-device="hw:msm8974taikomtp,0"
+            capture-device="hw:msm8974taikomtp,0">
+
+    <path name="deep-buffer-playback" />
+    <path name="audio-record" />
+
+    <value name="TQ" value="HiFi" />
+
+    <device name="Speaker"
+            description="Speaker"
+            playback-channels="2">
+      <path name="speaker" />
+      <path name="deep-buffer-playback speaker" />
+    </device>
+
+    <device name="Headphones"
+            description="Headset"
+            playback-channels="2">
+      <path name="headphones" />
+      <path name="deep-buffer-playback" />
+    </device>
+
+    <device name="Handset"
+            description="Handset earpiece"
+            playback-channels="2">
+      <path name="handset" />
+      <path name="deep-buffer-playback handset" />
+
+      <conflict name="Speaker" />
+      <conflict name="SpeakerMic" />
+      <conflict name="Headphones" />
+    </device>
+
+    <device name="HandsetMic"
+            description="Handset microphone"
+            capture-channels="2">
+      <path name="handset-mic" />
+      <path name="audio-record" />
+
+      <conflict name="Speaker" />
+      <conflict name="SpeakerMic" />
+      <conflict name="HeadsetMic" />
+    </device>
+
+    <device name="SpeakerMic"
+            description="Handset microphone for speaker-mode"
+            capture-channels="2">
+      <path name="speaker-mic" />
+      <path name="audio-record" />
+
+      <conflict name="Handset" />
+      <conflict name="HandsetMic" />
+      <conflict name="HeadsetMic" />
+    </device>
+
+    <device name="HeadsetMic"
+            description="Headset microphone"
+            capture-channels="2">
+      <path name="headset-mic" />
+      <path name="audio-record" />
+
+      <conflict name="HandsetMic" />
+      <conflict name="SpeakerMic" />
+    </device>
+
+  </use-case>
+
+  <ignore>
+    <!-- Voice/Voip controls generate an EPERM on init -->
+    <ctl name="Voice Rx Device Mute" />
+    <ctl name="Voice Rx Device Mute" />
+    <ctl name="Voice Rx Device Mute" />
+    <ctl name="Voice Tx Mute" />
+    <ctl name="Voice Tx Mute" />
+    <ctl name="Voice Tx Mute" />
+    <ctl name="Voice Rx Gain" />
+    <ctl name="Voice Rx Gain" />
+    <ctl name="Voice Rx Gain" />
+    <ctl name="Voip Tx Mute" />
+    <ctl name="Voip Tx Mute" />
+    <ctl name="Voip Rx Gain" />
+    <ctl name="Voip Rx Gain" />
+    <ctl name="Voip Mode Config" />
+    <ctl name="Voip Rate Config" />
+    <ctl name="Voip Evrc Min Max Rate Config" />
+    <ctl name="Voip Evrc Min Max Rate Config" />
+    <ctl name="Voip Dtx Mode" />
+
+    <!-- These don't exist -->
+    <ctl name="AUDIO_EXT_EC MUX" />
+    <ctl name="SEC_AUX_PCM_RX_Voice Mixer Voice2" />
+    <ctl name="Voice2_Tx Mixer SEC_AUX_PCM_TX_Voice2" />
+    <ctl name="MultiMedia4 Mixer MI2S_TX" />
+    <ctl name="QUAT_MI2S_RX_Voice Mixer QCHAT" />
+    <ctl name="QCHAT_Tx Mixer SEC_AUX_PCM_TX_Voice" />
+    <ctl name="RX4 DSM MUX" />
+    <ctl name="RX6 DSM MUX" />
+    <ctl name="QUAT_MI2S_RX Audio Mixer MultiMedia9" />
+    <ctl name="MultiMedia1 Mixer SLIMBUS_0_TX" />
+
+    <!-- Returns EINVAL when when we try to set a value -->
+    <ctl name="MAD Input" />
+
+    <!-- Misnamed, so probably ignored -->
+    <!-- Should be AANC_SLIM_0_RX MUX -->
+    <ctl name="SLIM_0_RX AANC MUX" />
+  </ignore>
+</config>
