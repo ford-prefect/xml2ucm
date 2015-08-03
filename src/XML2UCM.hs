@@ -30,8 +30,15 @@ stringToMaybe :: String -> Maybe String
 stringToMaybe "" = Nothing
 stringToMaybe s  = Just s
 
-generateCommand :: TinyXML.Control -> Maybe UCM.Command
-generateCommand TinyXML.Control{..} = Just $ UCM.CSet controlName (stringToMaybe controlIndex) controlValue
+isIgnoredControl :: TinyXMLConfig.Config -> String -> Bool
+isIgnoredControl TinyXMLConfig.Config{..} name = any isIgnored confIgnoreCtls
+  where
+    isIgnored TinyXMLConfig.Control{..} = ctlName == name
+
+generateCommand :: TinyXMLConfig.Config -> TinyXML.Control -> Maybe UCM.Command
+generateCommand config TinyXML.Control{..}
+  | isIgnoredControl config controlName = Nothing
+  | otherwise                           = Just $ UCM.CSet controlName (stringToMaybe controlIndex) controlValue
 
 lookupListOrDie :: String -> String -> [(String, a)] -> a
 lookupListOrDie typ name list
@@ -40,10 +47,11 @@ lookupListOrDie typ name list
   where
     item = lookup name list
 
-generateDefaultCommand :: TinyXML.Mixer -> TinyXML.Control -> Maybe UCM.Command
-generateDefaultCommand TinyXML.Mixer{..} TinyXML.Control{controlName = name}
-  | isNothing control = Nothing
-  | otherwise         = Just $ UCM.CSet name (stringToMaybe . controlIndex $ fromJust control) (controlValue $ fromJust control)
+generateDefaultCommand :: TinyXMLConfig.Config -> TinyXML.Mixer -> TinyXML.Control -> Maybe UCM.Command
+generateDefaultCommand config@TinyXMLConfig.Config{..} TinyXML.Mixer{..} TinyXML.Control{controlName = name}
+  | isNothing control            = Nothing
+  | isIgnoredControl config name = Nothing
+  | otherwise                    = Just $ UCM.CSet name (stringToMaybe . controlIndex $ fromJust control) (controlValue $ fromJust control)
   where
     control = lookup name mixerDefaults
 
@@ -57,51 +65,51 @@ generateSequence :: (TinyXML.Control -> Maybe UCM.Command) -> TinyXML.Mixer ->  
 generateSequence genCommand xml ctl =
   UCM.Sequence ctl . mapMaybe genCommand . concatMap (getPathControls xml)
 
-generateEnableSequence :: TinyXML.Mixer -> String -> [String] -> UCM.Sequence
-generateEnableSequence = generateSequence generateCommand
+generateEnableSequence :: TinyXMLConfig.Config -> TinyXML.Mixer -> String -> [String] -> UCM.Sequence
+generateEnableSequence config = generateSequence (generateCommand config)
 
-generateDisableSequence :: TinyXML.Mixer -> String -> [String] -> UCM.Sequence
-generateDisableSequence xml = generateSequence (generateDefaultCommand xml) xml
+generateDisableSequence :: TinyXMLConfig.Config -> TinyXML.Mixer -> String -> [String] -> UCM.Sequence
+generateDisableSequence config xml = generateSequence (generateDefaultCommand config xml) xml
 
 generateDevice :: TinyXML.Mixer -> TinyXMLConfig.Config -> TinyXMLConfig.Device -> UCM.Device
-generateDevice xml TinyXMLConfig.Config{..} TinyXMLConfig.Device{..} =
+generateDevice xml config@TinyXMLConfig.Config{..} TinyXMLConfig.Device{..} =
   UCM.Device devName
              devDesc
              devPlaybackChannels
              devCaptureChannels
              devPlaybackVolume
              devCaptureVolume
-             (generateEnableSequence xml confCtlDev devPaths)
-             (generateDisableSequence xml confCtlDev devPaths)
+             (generateEnableSequence config xml confCtlDev devPaths)
+             (generateDisableSequence config xml confCtlDev devPaths)
              devConflicts devValues
 
 generateModifier :: TinyXML.Mixer -> TinyXMLConfig.Config -> TinyXMLConfig.Modifier -> UCM.Modifier
-generateModifier xml TinyXMLConfig.Config{..} TinyXMLConfig.Modifier{..} =
+generateModifier xml config@TinyXMLConfig.Config{..} TinyXMLConfig.Modifier{..} =
   UCM.Modifier modName
                modDesc
                modPlayDev
                modCaptureDev
-               (generateEnableSequence xml confCtlDev modPaths)
-               (generateDisableSequence xml confCtlDev modPaths)
+               (generateEnableSequence config xml confCtlDev modPaths)
+               (generateDisableSequence config xml confCtlDev modPaths)
                modSupports modValues
 
 generateVerb :: TinyXML.Mixer -> TinyXMLConfig.Config -> TinyXMLConfig.UseCase -> UCM.Verb
-generateVerb xml conf@TinyXMLConfig.Config{..} TinyXMLConfig.UseCase{..} =
+generateVerb xml config@TinyXMLConfig.Config{..} TinyXMLConfig.UseCase{..} =
   UCM.Verb ucName
            ucDesc
            ucPlayDev
            ucCaptureDev
-           (generateEnableSequence xml confCtlDev ucPaths)
-           (generateDisableSequence xml confCtlDev ucPaths)
-           (map (generateDevice xml conf) ucDevices)
-           (map (generateModifier xml conf) ucModifiers)
+           (generateEnableSequence config xml confCtlDev ucPaths)
+           (generateDisableSequence config xml confCtlDev ucPaths)
+           (map (generateDevice xml config) ucDevices)
+           (map (generateModifier xml config) ucModifiers)
            ucValues
 
 generateDefaults :: TinyXML.Mixer -> TinyXMLConfig.Config -> UCM.Sequence
-generateDefaults TinyXML.Mixer{..} TinyXMLConfig.Config{..} =
+generateDefaults TinyXML.Mixer{..} config@TinyXMLConfig.Config{..} =
   UCM.Sequence confCtlDev (mapMaybe generateCommand' mixerDefaults)
   where
-    generateCommand' (_, c) = generateCommand c
+    generateCommand' (_, c) = generateCommand config c
 
 xml2ucm :: TinyXML.Mixer -> TinyXMLConfig.Config -> UCM.Config
 xml2ucm xml conf@TinyXMLConfig.Config{..} =

@@ -17,7 +17,8 @@ limitations under the License.
 {-# LANGUAGE Arrows, NoMonomorphismRestriction #-}
 
 module TinyXMLConfig
-( Device (..)
+( Control (..)
+, Device (..)
 , Modifier (..)
 , UseCase (..)
 , Config (..)
@@ -28,6 +29,9 @@ import Control.Applicative ((<$>))
 
 import Data.Tree.NTree.TypeDefs (NTree)
 import Text.XML.HXT.Core
+
+-- Control name
+data Control = Control { ctlName :: String } deriving (Eq, Ord, Show)
 
 -- Device name conflictingDeviceNames tinyXMLPathNames values
 data Device = Device { devName :: String,
@@ -62,7 +66,8 @@ data UseCase = UseCase { ucName :: String,
 -- Config cardName useCases
 data Config = Config { confCardName :: String,
                        confCtlDev :: String,
-                       confUseCases :: [UseCase] } deriving (Eq, Ord, Show)
+                       confUseCases :: [UseCase],
+                       confIgnoreCtls :: [Control] } deriving (Eq, Ord, Show)
 
 atTag :: ArrowXml a => String -> a (Data.Tree.NTree.TypeDefs.NTree XNode) XmlTree
 atTag tag = getChildren >>> isElem >>> hasName tag
@@ -118,13 +123,20 @@ getConfigUseCase = atTag "use-case" >>>
     uValues <- listA getConfigValue -< u
     returnA -< UseCase uName uDesc uPlayDev uRecDev uPaths uDevices uMods uValues
 
+getConfigIgnore :: ArrowXml a => a (Data.Tree.NTree.TypeDefs.NTree XNode) [Control]
+getConfigIgnore = atTag "ignore" >>>
+  proc i -> do
+    cCtls <- listA (getConfigName "ctl") -< i
+    returnA -< map Control cCtls
+
 getConfig :: ArrowXml a => a (Data.Tree.NTree.TypeDefs.NTree XNode) Config
 getConfig = atTag "config" >>>
   proc c -> do
     cCard <- getAttrValue "card-name" -< c
     cCtl <- getAttrValue "ctl-device" -< c
     cUseCases <- listA getConfigUseCase -< c
-    returnA -< Config cCard cCtl cUseCases
+    cIgnoreCtls <- getConfigIgnore -< c
+    returnA -< Config cCard cCtl cUseCases cIgnoreCtls
 
 parse :: String -> IO Config
 parse xmlString = head <$> runX (readString [withValidate no, withRemoveWS yes] xmlString >>> getConfig)
