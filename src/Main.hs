@@ -19,7 +19,7 @@ limitations under the License.
 module Main where
 
 import System.FilePath (joinPath)
-import System.Directory (createDirectory, doesDirectoryExist)
+import System.Directory (createDirectoryIfMissing, doesDirectoryExist)
 import Options.Applicative
 
 import TinyXML
@@ -65,8 +65,7 @@ run Opts{..} = do
   exists     <- doesDirectoryExist dir
   case (optForce, exists) of
     (False, True) -> error ("Error: Output directory '" ++ dir ++ "' already exists (use -f to overwrite)")
-    (True, True)  -> return () -- Directory exists, but we should just write the files we want out
-    (_, False)    -> createDirectory dir
+    (_, _)        -> createDirectoryIfMissing False dir
   mapM_ (uncurry (dumpFile dir)) (UCM.generateFiles $ xml2ucm xml config)
   where
     dumpFile :: FilePath -> FilePath -> String -> IO ()
