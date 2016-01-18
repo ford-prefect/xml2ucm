@@ -20,7 +20,7 @@ executable xml2ucm
                        UCM,
                        XML2UCM
   -- other-extensions:    
-  build-depends:       base >=4.6 && <=4.8,
+  build-depends:       base >=4.6,
                        containers,
                        filepath,
                        directory,
