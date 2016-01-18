@@ -10,26 +10,22 @@ some manual tweaking might be required based on the audio subsystem
 
 ## Building
 
-To build the code, you'll need ```cabal-install```, which your distribution
-probably provides. Check out the code and then run:
+To build the code, you'll need ```stack```, which your [distribution probably
+provides][stack]. Check out the code and then run:
+
+[stack]: http://docs.haskellstack.org/en/stable/GUIDE.html#downloading-and-installation
 
 ```sh
-$ cabal sandbox init
-$ cabal install --only-dependencies xml2ucm.cabal
-$ cabal build
+$ stack setup # if you haven't done this once already
+$ stack build
 ```
-
-(If you find the distribution version of ```cabal-install``` to be too old, you
-can install a newer version for your user locally using
-```cabal install cabal-install```. You'll then need to do something like
-```PATH=~/.cabal/bin:$PATH``` to use this version).
 
 ## Running
 
 To build with the example, you could do something like:
 
 ```sh
-$ ./dist/build/xml2ucm/xml2ucm -m examples/mako-mixer_paths.xml -c examples/mako-config.xml -o examples
+$ stack exec xml2ucm -m examples/mako-mixer_paths.xml -c examples/mako-config.xml -o examples
 ```
 
 The generated files will be in ```examples/apq8064-tabla-snd-card/```.
