@@ -47,7 +47,7 @@ parseOptions = Opts
            <*> strOption
                ( long "output-dir"
               <> short 'o'
-              <> value "."
+              <> value "-"
               <> metavar "DIR"
               <> help "Output path for UCM configuration directory" )
            <*> switch
@@ -61,16 +61,26 @@ run Opts{..} = do
   configFile <- readFile optConfigFile
   xml        <- TinyXML.parse xmlFile
   config     <- TinyXMLConfig.parse configFile
-  let dir = joinPath [optOutputDir, TinyXMLConfig.confCardName config]
+  let stdout = optOutputDir == "-"
+  let card   = TinyXMLConfig.confCardName config
+  let dir    = joinPath [optOutputDir, card]
   exists     <- doesDirectoryExist dir
-  case (optForce, exists) of
-    (False, True) -> error ("Error: Output directory '" ++ dir ++ "' already exists (use -f to overwrite)")
-    (_, _)        -> createDirectoryIfMissing False dir
-  mapM_ (uncurry (dumpFile dir)) (UCM.generateFiles $ xml2ucm xml config)
+  case (stdout, optForce, exists) of
+    (True, _, _)     -> return () -- Just write to stdout
+    (_, False, True) -> error ("Error: Output directory '" ++ dir ++ "' already exists (use -f to overwrite)")
+    (_, _, _)        -> createDirectoryIfMissing False dir
+  mapM_ (uncurry (dumpFile stdout card optOutputDir)) (UCM.generateFiles $ xml2ucm xml config)
   where
-    dumpFile :: FilePath -> FilePath -> String -> IO ()
-    dumpFile dir file =
-      writeFile (joinPath [dir, file])
+    dumpFile :: Bool -> String -> FilePath -> FilePath -> String -> IO ()
+    dumpFile False card dir file =
+      writeFile (joinPath [dir, card, file])
+    dumpFile True card _ file =
+      dumpFileNameAndContents $ joinPath [card, file]
+      where
+        dumpFileNameAndContents :: String -> String -> IO ()
+        dumpFileNameAndContents path contents =
+          -- File path and contents in markdown formattable form
+          putStrLn $ "## " ++ path ++ "\n```\n" ++ contents ++ "```\n"
 
 
 main :: IO ()
