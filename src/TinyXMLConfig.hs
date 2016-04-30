@@ -135,7 +135,7 @@ getConfig = atTag "config" >>>
     cCard <- getAttrValue "card-name" -< c
     cCtl <- getAttrValue "ctl-device" -< c
     cUseCases <- listA getConfigUseCase -< c
-    cIgnoreCtls <- withDefault getConfigIgnore [] -< c
+    cIgnoreCtls <- getConfigIgnore `withDefault` [] -< c
     returnA -< Config cCard cCtl cUseCases cIgnoreCtls
 
 parse :: String -> IO Config
