@@ -25,7 +25,7 @@ $ stack build
 To build with the example, you could do something like:
 
 ```sh
-$ stack exec xml2ucm -m examples/mako-mixer_paths.xml -c examples/mako-config.xml -o examples
+$ stack exec -- xml2ucm -m examples/mako-mixer_paths.xml -c examples/mako-config.xml -o examples
 ```
 
 The generated files will be in ```examples/apq8064-tabla-snd-card/```.
