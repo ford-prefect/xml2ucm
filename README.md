@@ -8,6 +8,10 @@ In relatively simple setups, the UCM that is produced should just work, but
 some manual tweaking might be required based on the audio subsystem
 (PulseAudio, CrAS, ...) and the hardware.
 
+You can read more about the motivation and design in [my blog post][blog].
+
+[blog]: https://arunraghavan.net/2016/01/audio-devices-and-configuration/
+
 ## Building
 
 To build the code, you'll need ```stack```, which your [distribution probably
