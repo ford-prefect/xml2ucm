@@ -20,7 +20,7 @@ executable xml2ucm
                        UCM,
                        XML2UCM
   -- other-extensions:    
-  build-depends:       base >=4.6,
+  build-depends:       base >=4.6 && < 5,
                        containers,
                        filepath,
                        directory,
@@ -28,3 +28,7 @@ executable xml2ucm
                        optparse-applicative
   hs-source-dirs:      src
   default-language:    Haskell2010
+
+source-repository head
+  type:     git
+  location: https://github.com/ford-prefect/xml2ucm
