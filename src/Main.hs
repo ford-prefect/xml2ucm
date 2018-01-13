@@ -18,6 +18,7 @@ limitations under the License.
 
 module Main where
 
+import Data.Semigroup ((<>))
 import System.FilePath (joinPath)
 import System.Directory (createDirectoryIfMissing, doesDirectoryExist)
 import Options.Applicative
